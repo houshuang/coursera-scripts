@@ -1,0 +1,29 @@
+Questions
+---------------
+Q-0	course-useful
+Q-1	intend-complete
+Q-2	 <script> // ========================================================= function eval_matrix(question_id, matrix_options) { // Concat the values from the groups var result = ''; for(var opt in matrix_options) { result = result + $('input:radio[name='+question_id+'_g'+opt+']:checked').val() + '|'; } $('[name="answer['+question_id+'][answer]"]').val(result); } function setup_matrix_question(question_id, matrix_options, matrix_headings) { $('[name="answer['+question_id+'][display]"]') .before( '<table class="matrix_question table"> \ <thead> \ <tr id="'+question_id+'_head"> \ <th></th> \ </tr> \ </thead> \ <tbody id="'+question_id+'_body"> \ </tbody> \ </table>') .hide(); var $qhead = $('#'+question_id+'_head'); for(var opt in matrix_headings) { $qlabel = $('<th />').text(matrix_headings[opt]); $qhead.append($qlabel); } var $qbody = $('#'+question_id+'_body'); for(var opt in matrix_options) { $qrow = $('<tr />'); $qrow.append($('<td />').css('text-align', 'left').text(matrix_options[opt])); for(var i = 1; i <= matrix_headings.length; i++) { $qrow.append( $('<td />') .append($('<input />').attr({type: 'radio', name: question_id + '_g' + opt, value: i})) ); } $qbody.append($qrow); } // Hook on form submit $('#quiz_form').submit(function() { eval_matrix(question_id, matrix_options); return true; }); } // ========================================================= window.addEventListener('load', function() { setup_matrix_question( 'matrix_q1', [ 'reduce-weekly', 'make-easier', 'make-difficult', 'make-credential-valuable', 'make-shorter' ], [ 'Strongly Disagree', 'Disagree', 'Neutral', 'Agree', 'Strongly Agree', ] ); }); </script> likely-complete 
+Q-4	tech-prob multiple=["The videos didn't work", "My Internet was too slow", "My browser was too old"]
+
+Student Answers
+---------------
+
+[11344]	Random Student
+Q-0	[01] Sat  6 Jul 2013  9:53 AM UTC (UTC +0000)	1.00	Yes, I found the course very useful
+Q-1	[01] Sat  6 Jul 2013  9:53 AM UTC (UTC +0000)	1.00	Yes, but the timing was wrong for me - I will try again another time
+Q-2	[01] Sat  6 Jul 2013  9:53 AM UTC (UTC +0000)	0.00	
+Q-2	[01] Sat  6 Jul 2013  9:53 AM UTC (UTC +0000)	0.00	1|3|4|4|1|
+Q-3	[01] Sat  6 Jul 2013  9:53 AM UTC (UTC +0000)	0.00	The videos didn't work
+Q-3	[01] Sat  6 Jul 2013  9:53 AM UTC (UTC +0000)	0.00	My Internet was too slow
+
+
+[11345]	Random Student
+Q-0	[01] Sat  6 Jul 2013  9:53 AM UTC (UTC +0000)	1.00	Yes, I found the course very useful
+Q-1	[01] Sat  6 Jul 2013  9:53 AM UTC (UTC +0000)	1.00	Yes, but the timing was wrong for me - I will try again another time
+Q-2	[01] Sat  6 Jul 2013  9:53 AM UTC (UTC +0000)	0.00	
+Q-2	[01] Sat  6 Jul 2013  9:53 AM UTC (UTC +0000)	0.00	1|3|4|4|1|
+Q-3	[01] Sat  6 Jul 2013  9:53 AM UTC (UTC +0000)	0.00	The videos didn't work
+Q-3	[01] Sat  6 Jul 2013  9:53 AM UTC (UTC +0000)	0.00	My Internet was too slow
+
+
+
