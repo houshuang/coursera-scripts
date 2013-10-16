@@ -1,0 +1,99 @@
+# Detect languages
+
+```{r}
+library(data.table)
+library(RMySQL)
+library(cldr) # language identification based on Google library
+library(wordcloud)
+
+options(stringsAsFactors=FALSE)
+```
+
+Courses
+```{r}
+courses <- c("abed", "intropsych")
+```
+
+Set up database
+```{r}
+con <- dbConnect(MySQL(), user="root", password="passwd", host="127.0.0.1")
+dbGetQuery(con, "SET NAMES utf8")
+```
+
+Function: Get tables 
+```{r}
+getMultipleTables <- function(connection, courses, table, remove=NULL) {
+  db <- lapply(courses, function(x) {
+    table <- paste0(x, ".", table)
+    fp <- dbReadTable(connection, table)
+    if(!is.null(remove)) { fp[[remove]] <- NULL}
+    fp$course <- x
+    fp
+  })
+
+  db2 <- rbindlist(db)
+  db2
+}
+```
+
+Read in and combine posts and comments, tagged by course provenance
+```{r}
+forum_posts <- getMultipleTables(con, courses, "forum_posts")
+fp <- forum_posts[,list(forum_user_id, post_text, course)]
+fp$text <- fp$post_text
+
+forum_comments <- getMultipleTables(con, courses, "forum_comments",
+                                    remove="thread_id")
+
+cp <- forum_comments[,list(forum_user_id, comment_text, course)]
+cp$text <- cp$comment_text
+
+db <- rbind(cp[,list(forum_user_id,text, course)], 
+            fp[,list(forum_user_id, text, course)])
+
+db$id <- 1:nrow(db)
+```
+
+Clean up (save memory)
+```{r}
+cp <- NULL
+forum_comments <- NULL
+forum_posts <- NULL
+fp <- NULL
+```
+
+Determine language - function
+```{r}
+determine_language <- Vectorize(function(x) { 
+  c <- detectLanguage(x, includeExtendedLanguages=T)
+  if(c$textBytes > 50) { return(c$detectedLanguage) } else { return(NA) }
+})
+```
+
+Determine language (this could take a while! TODO: parallelize)
+```{r}
+db$lang <- determine_language(db$text)
+db$lang <- as.factor(db$lang)
+db[lang == "TG_UNKNOWN_LANGUAGE", lang := NA_character_]
+db[lang != "ENGLISH" & !is.na(lang), foreign := T]
+```
+
+Now we have a table with comments and posts, tagged by course, and language. We can do all kinds of things with this, but for now let's do some quick overview stats.
+
+How many foreign posts by course?
+```{r}
+prop.table(table(db$course, db$foreign))
+```
+
+Top languages overall
+```{r}
+langcnt <- data.frame(table(db$lang))
+langordered <- langcnt[order(langcnt$Freq, decreasing=T),]
+langordered[1:10,]
+```
+
+Let's look at comments in Indonesian
+```{r}
+db[db$lang == "INDONESIAN",]$text
+wordcloud(words=db[db$lang == "INDONESIAN",]$text)
+```
