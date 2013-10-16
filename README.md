@@ -6,4 +6,5 @@ The scripts are under rapid development, and primarily used once or a few times,
 
 ## Contents
 
-- process_detailed_quizzes: Turn the `detailed quiz export` files from Coursera into standard CSV format
+- process_detailed_quizzes: Turn the `detailed quiz export` files from Coursera into standard CSV format (Ruby)
+- R-scripts: a number of R-scripts written in R+Markdown to process Coursera analytics
