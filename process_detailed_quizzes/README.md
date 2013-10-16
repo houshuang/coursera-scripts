@@ -90,3 +90,13 @@ studentid,course-useful,intend-complete,reduce-weekly-likely-complete,make-easie
 Loaded into R, it looks like: 
 
 ![](http://reganmian.net/files/coursera-quiz-in-R.png)
+
+## Student ID hash table
+If you have a hash table connecting the user ID with the various hashed IDs, like this:
+
+```
+user_id,anon_user_id,forum_user_id,session_user_id,eventing_user_id
+3434027,00013007edfsfdfsdfs649a5c86cc956c46e4fa22d,7b046e659c3dabbd1231231231e154ae4f7827648,448bd26b0e23dde40415sdfsfsfa129b95f50a,badec89a933242342342341088f2c443e620
+```
+
+and you want to automatically replace the student IDs with the anon_user_ids (for sharing with researchers), you can supply this file as the second option on the command line.
