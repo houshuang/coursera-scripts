@@ -1,0 +1,100 @@
+# Extract URLs
+
+```{r}
+library(stringr)
+library(ggplot2)
+library(data.table)
+library(plyr)
+library(RMySQL)
+library(cldr) # language identification based on Google library
+library(wordcloud)
+
+options(stringsAsFactors=FALSE)
+```
+
+Courses
+```{r}
+courses <- c("abed", "intropsych")
+```
+
+Set up database
+```{r}
+con <- dbConnect(MySQL(), user="root", password="passwd", host="127.0.0.1")
+dbGetQuery(con, "SET NAMES utf8")
+```
+
+Function: Get tables 
+```{r}
+getMultipleTables <- function(connection, courses, table, remove=NULL) {
+  db <- lapply(courses, function(x) {
+    table <- paste0(x, ".", table)
+    fp <- dbReadTable(connection, table)
+    if(!is.null(remove)) { fp[[remove]] <- NULL}
+    fp$course <- x
+    fp
+  })
+
+  db2 <- rbindlist(db)
+  db2
+}
+```
+
+Read in and combine posts and comments, tagged by course provenance
+```{r}
+forum_posts <- getMultipleTables(con, courses, "forum_posts")
+fp <- forum_posts[,list(forum_user_id, post_text, course)]
+fp$text <- fp$post_text
+
+forum_comments <- getMultipleTables(con, courses, "forum_comments",
+                                    remove="thread_id")
+
+cp <- forum_comments[,list(forum_user_id, comment_text, course)]
+cp$text <- cp$comment_text
+
+db <- rbind(cp[,list(forum_user_id,text, course)], 
+            fp[,list(forum_user_id, text, course)])
+
+db$id <- 1:nrow(db)
+```
+
+Clean up (save memory)
+```{r}
+cp <- NULL
+forum_comments <- NULL
+forum_posts <- NULL
+fp <- NULL
+```
+
+Extract URLs and domains (can take some time!)
+```{r}
+url_pattern <- "http[^([:blank:]|\\\"|<|&|#\n\r)]+"
+
+db[, urls := str_match_all(text, url_pattern)]
+urls <- db[, list(url=unlist(urls)), by=id]
+
+domain_pattern <- "https?://(www\\.)?([^\\/]+)(.+)$"
+urls[ ,domain := sub(domain_pattern, "\\2", url) ]
+```
+
+We now have a table called `urls`, which contains the url, the domain, and a link back to the `db` through `id` (to look up student id, course, etc). 
+
+# Quick overview statistics
+Shows most frequently linked URLs, and domains, and also the number of unique URLs linked per domain
+```{r}
+urlfreq <- setkey(data.table(data.frame(table(urls$url))), Freq)
+domainfreq <- setkey(data.table(data.frame(table(urls$domain))), Freq)
+
+tail(urlfreq, 10)
+tail(domainfreq, 10)
+
+top40 <- subset(domainfreq, Freq > 40)
+setnames(top40, c("domains", "Freq"))
+top40[order(top40$Freq),] # top 40 domains in total
+
+top40$uniqurls <- sapply(top40$domains, function(x) {
+  print(x)
+  length(unique(urls[domain == x,url]))
+})
+
+top40[order(top40$uniqurls) ,list(domains, uniqurls)]
+```
